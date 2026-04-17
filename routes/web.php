@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\WelcomeController; 
+use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ClassArmController;
 use App\Http\Controllers\DepartmentController;
@@ -171,21 +171,21 @@ Route::get('/course/{courseId}/attendance/report', [CourseDetailsController::cla
 // Add these routes inside your existing routes
 Route::middleware(['auth'])->group(function () {
     // Existing routes...
-    
+
     // Course details route
     Route::get('/course/{course}/details', [CourseDetailsController::class, 'show'])->name('course.details');
-    
+
     // Attendance routes
     Route::post('/course/{course}/attendance', [CourseDetailsController::class, 'storeAttendance'])->name('course.attendance.store');
     Route::get('/course/{course}/attendance/report', [CourseDetailsController::class, 'getAttendanceReport'])->name('course.attendance.report');
-    
+
     // Email routes for low attendance notifications - NOW POINTING TO CourseDetailsController
     Route::post('/course/{course}/send-email', [CourseDetailsController::class, 'sendEmailToStudent'])->name('course.send-email');
     Route::post('/course/{course}/send-bulk-email', [CourseDetailsController::class, 'sendBulkEmail'])->name('course.send-bulk-email');
-    
+
     // Date range report route
     Route::get('/course/{course}/attendance/range-report', [CourseDetailsController::class, 'getRangeReport'])->name('course.attendance.range-report');
-    
+
     // Attendance record routes
     Route::get('/course/{course}/attendance/record/{record}', [CourseDetailsController::class, 'viewRecord'])->name('course.attendance.record');
     Route::get('/course/{course}/attendance/record/{record}/print', [CourseDetailsController::class, 'printRecord'])->name('course.attendance.record.print');
@@ -200,6 +200,7 @@ Route::get('/course/{courseId}/filtered-students', [CourseDetailsController::cla
 Route::get('/user', function () {
     return Inertia::render('User');
 })->middleware(['auth'])->name('user');
+
 use App\Http\Controllers\UserController;
 
 // User Management Routes
@@ -209,6 +210,30 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/user/{user}', [UserController::class, 'update'])->name('user.update');
     Route::delete('/user/{user}', [UserController::class, 'destroy'])->name('user.destroy');
 });
+
+// Student Management Routes
+Route::middleware(['auth'])->group(function () {
+    // Student listing page with data
+    Route::get('/students', [StudentController::class, 'index'])->name('students.index');
+
+    // CRUD operations
+    Route::post('/students', [StudentController::class, 'store'])->name('students.store');
+    Route::get('/students/{student}', [StudentController::class, 'show'])->name('students.show');
+    Route::put('/students/{student}', [StudentController::class, 'update'])->name('students.update');
+    Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
+
+    // Additional routes for dropdowns and checks
+    Route::get('/students/departments', [StudentController::class, 'getDepartments'])->name('students.departments');
+    Route::get('/students/department/{department}/streams', [StudentController::class, 'getStreamsByDepartment'])->name('students.streams.by.department');
+    Route::post('/students/check-email', [StudentController::class, 'checkEmail'])->name('students.check.email');
+    Route::post('/students/check-phone', [StudentController::class, 'checkPhone'])->name('students.check.phone');
+    Route::post('/students/check-student-id', [StudentController::class, 'checkStudentId'])->name('students.check.student_id');
+
+    // Get paginated list of students
+    Route::get('/students/list/data', [StudentController::class, 'getStudentsList'])->name('students.list');
+});
+// Add this route inside your student routes group
+Route::get('/students/all-streams', [StudentController::class, 'getAllStreams'])->name('students.all.streams');
 
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
@@ -220,19 +245,19 @@ Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
 Route::middleware(['auth'])->group(function () {
     // Get assigned courses with details
     Route::get('/api/user/courses', [WelcomeController::class, 'getUserCourses'])->name('api.user.courses');
-    
+
     // Get attendance statistics
     Route::get('/api/user/attendance-stats', [WelcomeController::class, 'getAttendanceStatistics'])->name('api.user.attendance.stats');
-    
+
     // Get recent attendance records
     Route::get('/api/user/recent-attendances', [WelcomeController::class, 'getRecentAttendances'])->name('api.user.recent.attendances');
-    
+
     // Get system statistics
     Route::get('/api/system/stats', [WelcomeController::class, 'getSystemStats'])->name('api.system.stats');
-    
+
     // Get departments with student counts
     Route::get('/api/departments/stats', [WelcomeController::class, 'getDepartmentsWithStats'])->name('api.departments.stats');
-    
+
     // Get today's attendance rate
     Route::get('/api/today/attendance-rate', [WelcomeController::class, 'getTodayAttendanceRate'])->name('api.today.attendance.rate');
 });
@@ -250,28 +275,3 @@ Route::get('/course-details/{courseId}', function ($courseId) {
     ]);
 })->name('course.details');
 require __DIR__ . '/auth.php';
-
-
-// Student Management Routes - Keep only these
-Route::middleware(['auth'])->group(function () {
-    // Student listing page with data
-    Route::get('/students', [StudentController::class, 'index'])->name('students.index');
-    
-    // CRUD operations
-    Route::post('/students', [StudentController::class, 'store'])->name('students.store');
-    Route::get('/students/{student}', [StudentController::class, 'show'])->name('students.show');
-    Route::put('/students/{student}', [StudentController::class, 'update'])->name('students.update');
-    Route::delete('/students/{student}', [StudentController::class, 'destroy'])->name('students.destroy');
-
-    // Additional routes for dropdowns and checks
-    Route::get('/students/departments', [StudentController::class, 'getDepartments'])->name('students.departments');
-    Route::get('/students/department/{department}/streams', [StudentController::class, 'getStreamsByDepartment'])->name('students.streams.by.department');
-    Route::post('/students/check-email', [StudentController::class, 'checkEmail'])->name('students.check.email');
-    Route::post('/students/check-phone', [StudentController::class, 'checkPhone'])->name('students.check.phone');
-    Route::post('/students/check-student-id', [StudentController::class, 'checkStudentId'])->name('students.check.student_id');
-    
-    // Get paginated list of students
-    Route::get('/students/list/data', [StudentController::class, 'getStudentsList'])->name('students.list');
-});
-// Add this route inside your student routes group
-Route::get('/students/all-streams', [StudentController::class, 'getAllStreams'])->name('students.all.streams');
